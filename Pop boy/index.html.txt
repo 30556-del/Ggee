@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POP BOY</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    background:#f3f1ee;
+    text-align:center;
+    overflow-x:hidden;
+}
+
+h1{
+    font-size:72px;
+    font-weight:900;
+    margin-top:20px;
+    color:white;
+    -webkit-text-stroke:3px black;
+    text-shadow:0 3px 0 black;
+}
+
+#score{
+    font-size:90px;
+    font-weight:bold;
+    color:#222;
+    margin-top:10px;
+}
+
+.label{
+    font-size:34px;
+    margin-bottom:25px;
+    color:#333;
+}
+
+.frame{
+    width:900px;
+    max-width:92vw;
+    margin:0 auto;
+    background:#8fd0f5;
+    border-radius:28px;
+    padding:22px;
+    box-shadow:0 8px 18px rgba(0,0,0,.15);
+}
+
+#boy{
+    width:100%;
+    border-radius:20px;
+    cursor:pointer;
+    user-select:none;
+    transition:transform .05s ease;
+    display:block;
+}
+
+#boy:active{
+    transform:scale(.98);
+}
+
+.hint{
+    margin-top:18px;
+    font-size:34px;
+    color:#222;
+}
+
+.bottom{
+    width:900px;
+    max-width:92vw;
+    margin:18px auto 28px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+}
+
+.btn{
+    background:white;
+    border:2px solid #ddd;
+    border-radius:14px;
+    padding:12px 18px;
+    font-size:20px;
+    color:#333;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    box-shadow:0 2px 6px rgba(0,0,0,.08);
+}
+
+@media (max-width:700px){
+    h1{font-size:52px;-webkit-text-stroke:2px black;}
+    #score{font-size:64px;}
+    .label,.hint{font-size:24px;}
+    .btn{font-size:16px;padding:10px 14px;}
+}
+</style>
+</head>
+<body>
+
+<h1>POP BOY</h1>
+
+<div id="score">0</div>
+<div class="label">Clicks</div>
+
+<div class="frame">
+    <img id="boy" src="normal.jpg" alt="Pop Boy">
+</div>
+
+<div class="hint">Click on the image!</div>
+
+<div class="bottom">
+    <div class="btn" id="soundBtn">🔊 Sound: ON</div>
+    <div class="btn">🏆 Leaderboard</div>
+</div>
+
+<script>
+const img = document.getElementById("boy");
+const score = document.getElementById("score");
+const soundBtn = document.getElementById("soundBtn");
+
+let clicks = Number(localStorage.getItem("popboy-score") || 0);
+let soundOn = true;
+score.textContent = clicks;
+
+function pop(){
+    clicks++;
+    score.textContent = clicks;
+    localStorage.setItem("popboy-score", clicks);
+
+    if(soundOn){
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = "square";
+        o.frequency.value = 650;
+        o.connect(g);
+        g.connect(ctx.destination);
+        g.gain.value = 0.08;
+        o.start();
+        o.stop(ctx.currentTime + 0.05);
+    }
+}
+
+function openMouth(){
+    img.src = "open.jpg";
+}
+
+function closeMouth(){
+    img.src = "normal.jpg";
+}
+
+img.addEventListener("mousedown", openMouth);
+img.addEventListener("mouseup", closeMouth);
+img.addEventListener("mouseleave", closeMouth);
+
+img.addEventListener("touchstart", (e)=>{
+    e.preventDefault();
+    openMouth();
+    pop();
+}, {passive:false});
+
+img.addEventListener("touchend", closeMouth);
+
+img.addEventListener("click", pop);
+
+soundBtn.addEventListener("click", ()=>{
+    soundOn = !soundOn;
+    soundBtn.innerHTML = soundOn ? "🔊 Sound: ON" : "🔇 Sound: OFF";
+});
+</script>
+
+</body>
+</html>
